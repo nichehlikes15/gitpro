@@ -1,0 +1,90 @@
+//Run with dx serve
+
+use dioxus::{prelude::*};
+use std::path::Path;
+use std::process::Command;
+
+const MAIN_CSS: Asset = asset!("/assets/main.css");
+const JETBRAINS_MONO: Asset = asset!("/assets/fonts/JetBrainsMono-Medium.ttf");
+
+fn main() {
+    dioxus::launch(App);
+}
+
+#[component]
+fn App() -> Element {
+    rsx! {
+        document::Style { r#type: "text/css",
+            {
+                format!(
+                    "@font-face {{ font-family: 'JetBrainsMono'; src: url('{}') format('truetype'); font-weight: normal; font-style: normal; }}",
+                    JETBRAINS_MONO,
+                )
+            }
+        }
+
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        Menu {}
+    }
+}
+
+#[component]
+pub fn Menu() -> Element {
+    let mut repo_link = use_signal(|| "".to_string());
+
+    rsx! {
+        div { id: "buttons",
+            input {
+                class: "input",
+                placeholder: "Enter repo link",
+                value: "{repo_link()}",
+                oninput: move |event| repo_link.set(event.value()),
+            },
+            button {
+                class: "button",
+                onclick: move |_| {println!("{}", repo_link)},
+                "Set Repo"
+            },
+            button {
+                class: "button",
+                onclick: move |_| {
+                    spawn(async {
+                        if let Err(e) = push() {
+                            println!("Git push failed: {}", e);
+                        }
+                    });
+                },
+                "Push"
+            },
+            button { class: "button", "Pull" }
+            button { class: "button", "Commit" }
+        }
+    }
+}
+
+fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
+    let status = Command::new(cmd).args(args).status().map_err(|e| e.to_string())?;
+    if !status.success() {
+        return Err(format!("Command failed: {} {:?}", cmd, args));
+    }
+    Ok(())
+}
+
+fn setup_git(repo_link: &str) -> Result<(), String> {
+    run("git", &["init"]);
+    run("git", &["remote", "add", "origin", repo_link]);
+    Ok(())
+}
+
+fn push() -> Result<(), String> {
+    if !Path::new(".git").exists() {
+        return Err("No .git directory found".into());
+    }
+
+    run("git", &["add", "."])?;
+    // commit may fail if nothing changed, ignore error
+    let _ = run("git", &["commit", "-m", "Test"]);
+    run("git", &["push", "-u", "origin", "main"])?;
+
+    Ok(())
+}
