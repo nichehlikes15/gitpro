@@ -1802,7 +1802,10 @@ name = "gitpro"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+<<<<<<< HEAD
  "url",
+=======
+>>>>>>> fc2ed539328c3be26f9bf00f683475ceff9a3590
 ]
 
 [[package]]
