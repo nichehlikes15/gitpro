@@ -5,6 +5,7 @@ use std::path::Path;
 use std::process::Command;
 use url::Url;
 
+
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const JETBRAINS_MONO: Asset = asset!("/assets/fonts/JetBrainsMono-Medium.ttf");
 
@@ -99,13 +100,20 @@ fn current_branch() -> String {
 fn setup_git(repo_link: &str) -> Result<(), String> {
     run("git", &["init"])?;
 
-    // check if origin exists
-    let output = Command::new("git").args(["remote"]).output().map_err(|e| e.to_string())?;
+    let output = Command::new("git").args(["remote", "-v"]).output().map_err(|e| e.to_string())?;
     let remotes = String::from_utf8_lossy(&output.stdout);
-    if remotes.lines().any(|line| line == "origin") {
-        println!("Remote 'origin' already exists, skipping add.");
+
+    if remotes.lines().any(|line| line.starts_with("origin")) {
+        let origin_line = remotes.lines().find(|line| line.starts_with("origin")).unwrap();
+        let parts: Vec<&str> = origin_line.split_whitespace().collect();
+        let current_url = parts.get(1).unwrap_or(&"<unknown>");
+
+        println!("OVERWRITING: Remote origin' already exists: {}", current_url);
+        run("git", &["remote", "set-url", "origin", repo_link])?;
+        println!("Remote 'origin' updated to {}", repo_link);
     } else {
         run("git", &["remote", "add", "origin", repo_link])?;
+        println!("ORIGIN SET TO: {}", repo_link);
     }
 
     Ok(())
@@ -120,7 +128,7 @@ fn push() -> Result<(), String> {
     let _ = run("git", &["commit", "-m", "Test"]);
 
     let branch = current_branch(); // detect current branch
-    println!("{}", branch);
+    println!("PUSHING TO BRANCH: {}", branch);
     run("git", &["push", "-u", "origin", &branch])?;
 
     Ok(())
