@@ -8,14 +8,13 @@ edition = "2021"
 
 [dependencies]
 dioxus = { version = "0.7.3", features = [] }
+url = "2.5.8"
 
 [features]
 default = ["desktop"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
-
-[profile]
 
 [profile.wasm-dev]
 inherits = "dev"

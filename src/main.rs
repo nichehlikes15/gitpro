@@ -3,6 +3,7 @@
 use dioxus::{prelude::*};
 use std::path::Path;
 use std::process::Command;
+use url::Url;
 
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const JETBRAINS_MONO: Asset = asset!("/assets/fonts/JetBrainsMono-Medium.ttf");
@@ -42,7 +43,20 @@ pub fn Menu() -> Element {
             },
             button {
                 class: "button",
-                onclick: move |_| {println!("{}", repo_link)},
+                onclick: move |_| {
+
+                    if Url::parse(&repo_link().clone()).is_err() {
+                        println!("Invalid URL: {}", repo_link().clone());
+                        return;
+                    }
+
+                    spawn(async move {
+                        if let Err(e) = setup_git(&repo_link().clone()) {
+                            println!("Git push failed: {}", e);
+                        }
+                    });
+                    println!("{}", repo_link)
+                },
                 "Set Repo"
             },
             button {
@@ -71,8 +85,8 @@ fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
 }
 
 fn setup_git(repo_link: &str) -> Result<(), String> {
-    run("git", &["init"]);
-    run("git", &["remote", "add", "origin", repo_link]);
+    run("git", &["init"])?;
+    run("git", &["remote", "add", "origin", repo_link])?;
     Ok(())
 }
 
