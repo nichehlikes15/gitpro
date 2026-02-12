@@ -88,7 +88,7 @@ fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
 
 fn current_branch() -> String {
     let output = Command::new("git")
-        .args(&["branch", "--show-current"])
+        .args(["branch", "--show-current"])
         .output()
         .expect("Failed to get current branch");
     String::from_utf8_lossy(&output.stdout).trim().to_string()
@@ -118,7 +118,9 @@ fn push() -> Result<(), String> {
 
     run("git", &["add", "."])?;
     let _ = run("git", &["commit", "-m", "Test"]);
-    run("git", &["push", "-u", "origin", "main"])?;
+
+    let branch = current_branch(); // detect current branch
+    run("git", &["push", "-u", "origin", &branch])?;
 
     Ok(())
 }
