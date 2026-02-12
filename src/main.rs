@@ -120,6 +120,7 @@ fn push() -> Result<(), String> {
     let _ = run("git", &["commit", "-m", "Test"]);
 
     let branch = current_branch(); // detect current branch
+    println!("{}", branch);
     run("git", &["push", "-u", "origin", &branch])?;
 
     Ok(())
