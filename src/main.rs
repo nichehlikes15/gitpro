@@ -76,6 +76,8 @@ pub fn Menu() -> Element {
     }
 }
 
+//Helper functions
+
 fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
     let status = Command::new(cmd).args(args).status().map_err(|e| e.to_string())?;
     if !status.success() {
@@ -84,9 +86,28 @@ fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
     Ok(())
 }
 
+fn current_branch() -> String {
+    let output = Command::new("git")
+        .args(["branch", "--show-current"])
+        .output()
+        .expect("Failed to get current branch");
+    String::from_utf8_lossy(&output.stdout).trim().to_string()
+}
+
+//Main functions
+
 fn setup_git(repo_link: &str) -> Result<(), String> {
     run("git", &["init"])?;
-    run("git", &["remote", "add", "origin", repo_link])?;
+
+    // check if origin exists
+    let output = Command::new("git").args(["remote"]).output().map_err(|e| e.to_string())?;
+    let remotes = String::from_utf8_lossy(&output.stdout);
+    if remotes.lines().any(|line| line == "origin") {
+        println!("Remote 'origin' already exists, skipping add.");
+    } else {
+        run("git", &["remote", "add", "origin", repo_link])?;
+    }
+
     Ok(())
 }
 
@@ -96,9 +117,10 @@ fn push() -> Result<(), String> {
     }
 
     run("git", &["add", "."])?;
-    // commit may fail if nothing changed, ignore error
-    let _ = run("git", &["commit", "-m", "Test"]);
-    run("git", &["push", "-u", "origin", "main"])?;
+    let _ = run("git", &["commit", "-m", "Test"]).ok();
+
+    let branch = current_branch();
+    run("git", &["push", "-u", "origin", &branch])?;
 
     Ok(())
 }
