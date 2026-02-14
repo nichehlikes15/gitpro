@@ -1,14 +1,9 @@
-<<<<<<< HEAD
 //Run with dx serve
 
 use dioxus::{prelude::*};
 use std::path::Path;
 use std::process::Command;
 use url::Url;
-
-=======
-use dioxus::{prelude::*};
->>>>>>> fc2ed539328c3be26f9bf00f683475ceff9a3590
 
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const JETBRAINS_MONO: Asset = asset!("/assets/fonts/JetBrainsMono-Medium.ttf");
@@ -36,10 +31,18 @@ fn App() -> Element {
 
 #[component]
 pub fn Menu() -> Element {
-<<<<<<< HEAD
     let mut repo_link = use_signal(|| "".to_string());
 
     rsx! {
+        div { id: "info",
+            p {
+                "Current Branch: {current_branch()}"
+            }
+            p {
+                "Current Repo: {current_repo()}"
+            }
+        },
+
         div { id: "buttons",
             input {
                 class: "input",
@@ -76,17 +79,11 @@ pub fn Menu() -> Element {
                 },
                 "Push"
             },
-=======
-    rsx! {
-        div { id: "buttons",
-            button { class: "button", "Push" }
->>>>>>> fc2ed539328c3be26f9bf00f683475ceff9a3590
             button { class: "button", "Pull" }
             button { class: "button", "Commit" }
         }
     }
 }
-<<<<<<< HEAD
 
 //Helper functions
 
@@ -101,6 +98,14 @@ fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
 fn current_branch() -> String {
     let output = Command::new("git")
         .args(["branch", "--show-current"])
+        .output()
+        .expect("Failed to get current branch");
+    String::from_utf8_lossy(&output.stdout).trim().to_string()
+}
+
+fn current_repo() -> String {
+    let output = Command::new("git")
+        .args(["remote", "-v"])
         .output()
         .expect("Failed to get current branch");
     String::from_utf8_lossy(&output.stdout).trim().to_string()
@@ -144,5 +149,3 @@ fn push() -> Result<(), String> {
 
     Ok(())
 }
-=======
->>>>>>> fc2ed539328c3be26f9bf00f683475ceff9a3590

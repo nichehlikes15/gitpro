@@ -1,17 +1,12 @@
 [package]
 name = "gitpro"
 version = "0.1.0"
-authors = ["Oliver Tappin <olivertappin08@gmail.com>"]
+authors = ["nichehlikes15"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 dioxus = { version = "0.7.3", features = [] }
-<<<<<<< HEAD
 url = "2.5.8"
-=======
->>>>>>> fc2ed539328c3be26f9bf00f683475ceff9a3590
 
 [features]
 default = ["desktop"]
@@ -19,11 +14,6 @@ web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
 
-<<<<<<< HEAD
-=======
-[profile]
-
->>>>>>> fc2ed539328c3be26f9bf00f683475ceff9a3590
 [profile.wasm-dev]
 inherits = "dev"
 opt-level = 1
