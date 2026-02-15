@@ -32,15 +32,23 @@ fn App() -> Element {
 #[component]
 pub fn Menu() -> Element {
     let mut repo_link = use_signal(|| "".to_string());
+    let mut commit_message = use_signal(|| "".to_string());
 
     rsx! {
-        div { id: "info",
-            p {
-                "Current Branch: {current_branch()}"
+        div { id: "topbar",
+            /*p {
+                "Current Branch: {current_branch()} Current Repo: {current_repo()}"
+            }*/
+            
+            div { class: "active-branch",
+                span { class: "label", "Active branch" }
+                div { class: "branch-selection",
+                    img {src: asset!("/assets/icons/fork_right.svg"), alt: "branch icon"}
+                    "{current_branch()}"
+                    img {src: asset!("/assets/icons/arrow_down.svg"), alt: "down icon"}
+                }
             }
-            p {
-                "Current Repo: {current_repo()}"
-            }
+
         },
 
         div { id: "buttons",
@@ -49,6 +57,12 @@ pub fn Menu() -> Element {
                 placeholder: "Enter repo link",
                 value: "{repo_link()}",
                 oninput: move |event| repo_link.set(event.value()),
+            },
+            input {
+                class: "input",
+                placeholder: "Enter commit message",
+                value: "{commit_message()}",
+                oninput: move |event| commit_message.set(event.value()),
             },
             button {
                 class: "button",
@@ -61,7 +75,7 @@ pub fn Menu() -> Element {
 
                     spawn(async move {
                         if let Err(e) = setup_git(&repo_link().clone()) {
-                            println!("Git push failed: {}", e);
+                            println!("Git set repo failed: {}", e);
                         }
                     });
                     println!("{}", repo_link)
@@ -71,8 +85,13 @@ pub fn Menu() -> Element {
             button {
                 class: "button",
                 onclick: move |_| {
-                    spawn(async {
-                        if let Err(e) = push() {
+                    if commit_message.is_empty() {
+                        println!("commit message empty");
+                        return;
+                    }
+
+                    spawn(async move {
+                        if let Err(e) = push(&commit_message().clone()) {
                             println!("Git push failed: {}", e);
                         }
                     });
@@ -135,13 +154,13 @@ fn setup_git(repo_link: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn push() -> Result<(), String> {
+fn push(commit_message: &str) -> Result<(), String> {
     if !Path::new(".git").exists() {
         return Err("No .git directory found".into());
     }
 
     run("git", &["add", "."])?;
-    let _ = run("git", &["commit", "-m", "Test"]);
+    let _ = run("git", &["commit", "-m", commit_message]);
 
     let branch = current_branch(); // detect current branch
     println!("PUSHING TO BRANCH: {}", branch);
