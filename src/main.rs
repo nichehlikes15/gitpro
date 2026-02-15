@@ -163,7 +163,7 @@ fn push(commit_message: &str) -> Result<(), String> {
     let _ = run("git", &["commit", "-m", commit_message]);
 
     let branch = current_branch(); // detect current branch
-    println!("PUSHING TO BRANCH: {}", branch);
+    println!("PUSHING TO BRANCH: {} WITH COMMIT MESSAGE: {}", branch, commit_message);
     run("git", &["push", "-u", "origin", &branch])?;
 
     Ok(())
