@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::process::Command;
+use git2::{Cred, IndexAddOption, PushOptions, RemoteCallbacks, Repository,};
 
 fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
     let status = Command::new(cmd).args(args).status().map_err(|e| e.to_string())?;
@@ -53,13 +54,108 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
     if !Path::new(".git").exists() {
         return Err("No .git directory found".into());
     }
+    // open the git repository
+    let repo = Repository::open(".")
+        .map_err(|e| e.to_string())?;
 
-    run("git", &["add", "."])?;
-    let _ = run("git", &["commit", "-m", commit_message]);
+    // command: git add .
+    let mut index = repo.index()
+        .map_err(|e| e.to_string())?;
 
-    let branch = current_branch(); // detect current branch
-    println!("PUSHING TO BRANCH: {} WITH COMMIT MESSAGE: {}", branch, commit_message);
-    run("git", &["push", "-u", "origin", &branch])?;
+    // stage all files
+    index
+        .add_all(["*"].iter(), IndexAddOption::DEFAULT, None)
+        .map_err(|e| e.to_string())?;
+
+    // write staged
+    index.write()
+        .map_err(|e| e.to_string())?;
+
+    // create a tree from the index for commit
+    let tree_id = index.write_tree()
+        .map_err(|e| e.to_string())?;
+
+    let tree = repo.find_tree(tree_id)
+        .map_err(|e| e.to_string())?;
+
+    // command: git commit -m commit_message
+    let signature = repo.signature()
+        .map_err(|e| e.to_string())?;
+
+    // get current HEAD commit (if any)
+    let parent_commit = repo
+        .head()
+        .ok()
+        .and_then(|h| h.target())
+        .and_then(|oid| repo.find_commit(oid).ok());
+
+    let commit_result = match parent_commit {
+        // normal commit (repo already has commits)
+        Some(parent) => repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            commit_message,
+            &tree,
+            &[&parent],
+        ),
+
+        // first commit (no parents)
+        None => repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            commit_message,
+            &tree,
+            &[],
+        ),
+    };
+
+    // ignore "nothing to commit" errors
+    // replaces: let _ = run("git", ["commit", ...])
+    let _ = commit_result;
+
+    // command: current_branch()
+    // (same as: git branch --show-current)
+    let head = repo.head()
+        .map_err(|e| e.to_string())?;
+
+    let branch = head
+        .shorthand()
+        .ok_or("Failed to detect current branch")?
+        .to_string();
+
+    println!(
+        "PUSHING TO BRANCH: {} WITH COMMIT MESSAGE: {}",
+        branch, commit_message
+    );
+
+    // =========================================================
+    // authentication (git CLI does this implicitly)
+    // =========================================================
+    let mut callbacks = RemoteCallbacks::new();
+    callbacks.credentials(|_url, username, _| {
+        // uses ssh-agent (same behavior as git push via SSH)
+        Cred::ssh_key_from_agent(username.unwrap())
+    });
+
+    let mut push_options = PushOptions::new();
+    push_options.remote_callbacks(callbacks);
+
+    // =========================================================
+    // replaces: git push -u origin <branch>
+    // =========================================================
+    let mut remote = repo
+        .find_remote("origin")
+        .map_err(|e| e.to_string())?;
+
+    // local branch -> remote branch
+    remote
+        .push(
+            &[format!("refs/heads/{}:refs/heads/{}", branch, branch)],
+            Some(&mut push_options),
+        )
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }

@@ -6,6 +6,7 @@ edition = "2021"
 
 [dependencies]
 dioxus = { version = "0.7.3", features = [] }
+git2 = "0.20.4"
 url = "2.5.8"
 
 [features]
