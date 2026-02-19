@@ -1,4 +1,4 @@
-//Run with dx serve
+//Run with dx serve --always-on-top false
 
 use dioxus::{prelude::*};
 
@@ -27,5 +27,6 @@ fn App() -> Element {
 
         document::Link { rel: "stylesheet", href: MAIN_CSS }
         views::menu::menu {}
+        //views::home::home {}
     }
 }
