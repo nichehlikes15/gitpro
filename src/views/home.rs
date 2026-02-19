@@ -1,10 +1,10 @@
 use dioxus::{prelude::*};
 
+use crate::routes::Route;
 use crate::components::topbar;
-use crate::views::menu;
 
 #[component]
-pub fn home() -> Element {
+pub fn Home() -> Element {
     rsx! {
         topbar::topbar {}
 
@@ -15,11 +15,8 @@ pub fn home() -> Element {
             div { class: "home_buttons",
                 button { "Clone a Repository" }
                 button { "Create new Repository" }
-             }
-            p { class: "s3 link",
-                onclick: move |_| {menu::menu {};}, 
-                "Open Existing Local Repository",
             }
+            Link { class: "s3 link", to: Route::Menu {}, "Open Existing Local Repository"}
         }
     }
 }

@@ -5,7 +5,7 @@ authors = ["nichehlikes15"]
 edition = "2021"
 
 [dependencies]
-dioxus = { version = "0.7.3", features = [] }
+dioxus = { version = "0.7.3", features = ["router"] }
 git2 = "0.20.4"
 url = "2.5.8"
 

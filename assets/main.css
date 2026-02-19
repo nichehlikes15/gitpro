@@ -109,7 +109,7 @@ body {
     padding: 12px 16px;
 
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
 
     background-color: var(--bg2);
@@ -120,6 +120,7 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+    margin-left: 20px;
 }
 
 .branch-selection {
@@ -133,4 +134,10 @@ body {
     align-items: center;
     gap: 5px;
     cursor: pointer;
+}
+
+.topbar_img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
 }

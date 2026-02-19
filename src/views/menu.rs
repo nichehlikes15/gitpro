@@ -6,7 +6,7 @@ use crate::components::topbar;
 use crate::providers::git_helper;
 
 #[component]
-pub fn menu() -> Element {
+pub fn Menu() -> Element {
     let mut repo_link = use_signal(|| "".to_string());
     let mut commit_message = use_signal(|| "".to_string());
 

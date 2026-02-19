@@ -1,10 +1,13 @@
 //Run with dx serve --always-on-top false
 
-use dioxus::{prelude::*};
+use dioxus::prelude::*;
 
 mod components;
 mod views;
 mod providers;
+mod routes;
+
+use routes::Route;
 
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const JETBRAINS_MONO: Asset = asset!("/assets/fonts/JetBrainsMono-Medium.ttf");
@@ -26,7 +29,9 @@ fn App() -> Element {
         }
 
         document::Link { rel: "stylesheet", href: MAIN_CSS }
-        views::menu::menu {}
+
+        Router::<Route> {}
+        //views::menu::menu {}
         //views::home::home {}
     }
 }
