@@ -1,65 +1,128 @@
-use std::path::Path;
-use std::process::Command;
+use git2::{
+    Cred, ErrorCode, IndexAddOption, PushOptions, RemoteCallbacks, Repository, Signature,
+};
 
-fn run(cmd: &str, args: &[&str]) -> Result<(), String> {
-    let status = Command::new(cmd).args(args).status().map_err(|e| e.to_string())?;
-    if !status.success() {
-        return Err(format!("Command failed: {} {:?}", cmd, args));
-    }
-    Ok(())
+fn open_repo() -> Result<Repository, String> {
+    Repository::discover(".").map_err(|e| e.message().to_string())
+}
+
+fn fallback_signature(repo: &Repository) -> Result<Signature<'_>, String> {
+    repo.signature()
+        .or_else(|_| Signature::now("gitpro", "gitpro@local"))
+        .map_err(|e| e.message().to_string())
 }
 
 pub(crate) fn current_branch() -> String {
-    let output = Command::new("git")
-        .args(["branch", "--show-current"])
-        .output()
-        .expect("Failed to get current branch");
-    String::from_utf8_lossy(&output.stdout).trim().to_string()
+    let Ok(repo) = open_repo() else {
+        return "No repository".to_string();
+    };
+
+    let result = match repo.head() {
+        Ok(head) => head
+            .shorthand()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "DETACHED_HEAD".to_string()),
+        Err(_) => "No branch".to_string(),
+    };
+
+    result
 }
 
 pub(crate) fn current_repo() -> String {
-    let output = Command::new("git")
-        .args(["remote", "-v"])
-        .output()
-        .expect("Failed to get current branch");
-    String::from_utf8_lossy(&output.stdout).trim().to_string()
+    let Ok(repo) = open_repo() else {
+        return "No repository".to_string();
+    };
+
+    let result = match repo.find_remote("origin") {
+        Ok(remote) => remote
+            .url()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "origin has no URL".to_string()),
+        Err(_) => "No remote origin".to_string(),
+    };
+
+    result
 }
 
-//Main functions
-
 pub(crate) fn setup_git(repo_link: &str) -> Result<(), String> {
-    run("git", &["init"])?;
+    let repo = open_repo().or_else(|_| Repository::init(".").map_err(|e| e.message().to_string()))?;
 
-    let output = Command::new("git").args(["remote", "-v"]).output().map_err(|e| e.to_string())?;
-    let remotes = String::from_utf8_lossy(&output.stdout);
+    let result = match repo.find_remote("origin") {
+        Ok(_) => repo
+            .remote_set_url("origin", repo_link)
+            .map_err(|e| e.message().to_string()),
+        Err(e) if e.code() == ErrorCode::NotFound => {
+            repo.remote("origin", repo_link)
+                .map(|_| ())
+                .map_err(|e| e.message().to_string())
+        }
+        Err(e) => Err(e.message().to_string()),
+    };
 
-    if remotes.lines().any(|line| line.starts_with("origin")) {
-        let origin_line = remotes.lines().find(|line| line.starts_with("origin")).unwrap();
-        let parts: Vec<&str> = origin_line.split_whitespace().collect();
-        let current_url = parts.get(1).unwrap_or(&"<unknown>");
-
-        println!("OVERWRITING: Remote origin' already exists: {}", current_url);
-        run("git", &["remote", "set-url", "origin", repo_link])?;
-        println!("Remote 'origin' updated to {}", repo_link);
-    } else {
-        run("git", &["remote", "add", "origin", repo_link])?;
-        println!("ORIGIN SET TO: {}", repo_link);
-    }
-
-    Ok(())
+    result
 }
 
 pub(crate) fn push(commit_message: &str) -> Result<(), String> {
-    if !Path::new(".git").exists() {
-        return Err("No .git directory found".into());
+    let repo = open_repo()?;
+
+    // Stage all tracked + untracked changes.
+    let mut index = repo.index().map_err(|e| e.message().to_string())?;
+    index
+        .add_all(["*"].iter(), IndexAddOption::DEFAULT, None)
+        .map_err(|e| e.message().to_string())?;
+    index.write().map_err(|e| e.message().to_string())?;
+
+    let tree_id = index.write_tree().map_err(|e| e.message().to_string())?;
+    let tree = repo.find_tree(tree_id).map_err(|e| e.message().to_string())?;
+
+    // Create commit only when staged tree differs from HEAD tree.
+    let mut should_commit = true;
+    let mut parents = Vec::new();
+
+    if let Ok(head) = repo.head() {
+        if let Some(target) = head.target() {
+            let parent = repo.find_commit(target).map_err(|e| e.message().to_string())?;
+            let parent_tree = parent.tree().map_err(|e| e.message().to_string())?;
+            if parent_tree.id() == tree_id {
+                should_commit = false;
+            }
+            parents.push(parent);
+        }
     }
 
-    run("git", &["add", "."])?;
-    let _ = run("git", &["commit", "-m", commit_message]);
+    if should_commit {
+        let sig = fallback_signature(&repo)?;
+        let parent_refs: Vec<_> = parents.iter().collect();
+        repo.commit(Some("HEAD"), &sig, &sig, commit_message, &tree, &parent_refs)
+            .map_err(|e| e.message().to_string())?;
+    }
 
-    let branch = current_branch(); // detect current branch
-    println!("PUSHING TO BRANCH: {} WITH COMMIT MESSAGE: {}", branch, commit_message);
-    run("git", &["push", "-u", "origin", &branch])?;
+    let branch = repo
+        .head()
+        .ok()
+        .and_then(|h| h.shorthand().map(|s| s.to_string()))
+        .filter(|b| !b.is_empty())
+        .unwrap_or_else(|| "main".to_string());
 
-    Ok(())
+    let mut callbacks = RemoteCallbacks::new();
+    callbacks.credentials(|url, username_from_url, _allowed_types| {
+        Cred::ssh_key_from_agent(username_from_url.unwrap_or("git"))
+            .or_else(|_| {
+                let cfg = repo.config()?;
+                Cred::credential_helper(&cfg, url, username_from_url)
+            })
+            .or_else(|_| Cred::default())
+    });
+
+    let mut push_options = PushOptions::new();
+    push_options.remote_callbacks(callbacks);
+
+    let mut remote = repo
+        .find_remote("origin")
+        .map_err(|_| "Remote 'origin' not found. Set repo first.".to_string())?;
+
+    let refspec = format!("refs/heads/{0}:refs/heads/{0}", branch);
+    remote
+        .push(&[&refspec], Some(&mut push_options))
+        .map_err(|e| format!("Push failed: {}", e.message()))
 }
