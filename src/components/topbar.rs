@@ -2,6 +2,7 @@ use dioxus::{prelude::*};
 
 use crate::routes::Route;
 use crate::providers::git_helper;
+use crate::providers::login;
 
 #[component]
 pub fn topbar() -> Element {
@@ -23,6 +24,7 @@ pub fn topbar() -> Element {
                     "{git_helper::current_branch()}"
                     img {src: asset!("/assets/icons/arrow_down.svg"), alt: "down icon"}
                 }
+                span { class: "label", "{login::github_username_or_not_logged_in()}" }
             }
 
         },
