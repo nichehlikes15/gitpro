@@ -20,15 +20,15 @@ body {
 }
 
 .s1 {
-    font-size: 24px;
+    font-size: 1.5rem;
 }
 
 .s2 {
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 .s3 {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 .link {
@@ -58,6 +58,8 @@ body {
 
 .home_buttons button {
     flex: 1;
+    border-radius: 8px;
+    border: 2px solid var(--border);
 }
 
 #buttons {
