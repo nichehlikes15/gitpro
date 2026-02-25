@@ -44,7 +44,14 @@ pub(crate) fn current_repo() -> String {
     result
 }
 
+pub(crate) fn origin_url() -> Option<String> {
+    let repo = open_repo().ok()?;
+    let remote = repo.find_remote("origin").ok()?;
+    remote.url().map(|s| s.to_string())
+}
+
 pub(crate) fn setup_git(repo_link: &str) -> Result<(), String> {
+    println!("setup_git: {}", repo_link);
     let repo = open_repo().or_else(|_| Repository::init(".").map_err(|e| e.message().to_string()))?;
 
     let result = match repo.find_remote("origin") {

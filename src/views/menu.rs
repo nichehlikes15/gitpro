@@ -29,32 +29,47 @@ pub fn Menu() -> Element {
             button {
                 class: "button",
                 onclick: move |_| {
+                    let input = repo_link().trim().to_string();
 
-                    if Url::parse(&repo_link().clone()).is_err() {
-                        println!("Invalid URL: {}", repo_link().clone());
-                        return;
-                    }
+                    let url_to_use = if input.is_empty() {
+                        match git_helper::origin_url() {
+                            Some(existing) => existing,
+                            None => {
+                                println!("No existing Git remote to use. Please enter a repository URL.");
+                                return;
+                            }
+                        }
+                    } else {
+                        if Url::parse(&input).is_err() {
+                            println!("Invalid URL: {}", input);
+                            return;
+                        }
+                        input
+                    };
+
+                    let url_for_task = url_to_use.clone();
+                    println!("{}", url_to_use);
 
                     spawn(async move {
-                        if let Err(e) = git_helper::setup_git(&repo_link().clone()) {
+                        if let Err(e) = git_helper::setup_git(&url_for_task) {
                             println!("Git set repo failed: {}", e);
                         }
                     });
-                    println!("{}", repo_link)
                 },
                 "Set Repo"
             },
             button {
                 class: "button",
                 onclick: move |_| {
-                    if commit_message.is_empty() {
+                    if commit_message().trim().is_empty() {
                         println!("commit message empty");
                         return;
                     }
 
                     spawn(async move {
-                        if let Err(e) = git_helper::push(&commit_message().clone()) {
-                            println!("Git push failed: {}", e);
+                        match git_helper::push(&commit_message().clone()) {
+                            Ok(_) => println!("Git push succeeded."),
+                            Err(e) => println!("Git push failed: {}", e),
                         }
                     });
                 },
