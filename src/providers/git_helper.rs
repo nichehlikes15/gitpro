@@ -44,6 +44,24 @@ pub(crate) fn current_repo() -> String {
     result
 }
 
+fn normalize_repo_link(repo_link: &str) -> String {
+    let trimmed = repo_link.trim();
+
+    if let Some(rest) = trimmed.strip_prefix("https://github.com/") {
+        let without_git = rest.strip_suffix(".git").unwrap_or(rest);
+        let without_slash = without_git.trim_end_matches('/');
+        return format!("git@github.com:{without_slash}.git");
+    }
+
+    if let Some(rest) = trimmed.strip_prefix("http://github.com/") {
+        let without_git = rest.strip_suffix(".git").unwrap_or(rest);
+        let without_slash = without_git.trim_end_matches('/');
+        return format!("git@github.com:{without_slash}.git");
+    }
+
+    trimmed.to_string()
+}
+
 pub(crate) fn origin_url() -> Option<String> {
     let repo = open_repo().ok()?;
     let remote = repo.find_remote("origin").ok()?;
@@ -51,15 +69,16 @@ pub(crate) fn origin_url() -> Option<String> {
 }
 
 pub(crate) fn setup_git(repo_link: &str) -> Result<(), String> {
-    println!("setup_git: {}", repo_link);
+    let normalized = normalize_repo_link(repo_link);
+    println!("setup_git: {}", normalized);
     let repo = open_repo().or_else(|_| Repository::init(".").map_err(|e| e.message().to_string()))?;
 
     let result = match repo.find_remote("origin") {
         Ok(_) => repo
-            .remote_set_url("origin", repo_link)
+            .remote_set_url("origin", &normalized)
             .map_err(|e| e.message().to_string()),
         Err(e) if e.code() == ErrorCode::NotFound => {
-            repo.remote("origin", repo_link)
+            repo.remote("origin", &normalized)
                 .map(|_| ())
                 .map_err(|e| e.message().to_string())
         }
