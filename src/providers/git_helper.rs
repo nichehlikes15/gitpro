@@ -113,7 +113,33 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
 
     let mut callbacks = RemoteCallbacks::new();
     callbacks.credentials(|url, username_from_url, _allowed_types| {
-        Cred::ssh_key_from_agent(username_from_url.unwrap_or("git"))
+        let username = username_from_url.unwrap_or("git");
+
+        // Prefer explicit SSH key for GitHub SSH URLs if configured
+        if url.starts_with("git@github.com:") || url.starts_with("ssh://git@github.com") {
+            if let Ok(key_path) = std::env::var("GITPRO_SSH_KEY_PATH") {
+                let passphrase = std::env::var("GITPRO_SSH_PASSPHRASE").ok();
+                return Cred::ssh_key(
+                    username,
+                    None,
+                    std::path::Path::new(&key_path),
+                    passphrase.as_deref(),
+                );
+            }
+
+            return Cred::ssh_key_from_agent(username);
+        }
+
+        // HTTPS GitHub fallback via PAT
+        if url.starts_with("https://github.com/") {
+            if let Ok(token) = std::env::var("GITPRO_GITHUB_TOKEN") {
+                if !token.trim().is_empty() {
+                    return Cred::userpass_plaintext("x-access-token", &token);
+                }
+            }
+        }
+
+        Cred::ssh_key_from_agent(username)
             .or_else(|_| {
                 let cfg = repo.config()?;
                 Cred::credential_helper(&cfg, url, username_from_url)
