@@ -24,7 +24,7 @@ pub fn topbar() -> Element {
                     "{git_helper::current_branch()}"
                     img {src: asset!("/assets/icons/arrow_down.svg"), alt: "down icon"}
                 }
-                span { class: "label", "{login::github_username_or_not_logged_in()}" }
+                //span { class: "label", "{login::github_username_or_not_logged_in()}" }
             }
 
         },

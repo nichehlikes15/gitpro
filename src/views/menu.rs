@@ -26,38 +26,38 @@ pub fn Menu() -> Element {
                 value: commit_message(),
                 oninput: move |event| commit_message.set(event.value()),
             },
-            button {
-                class: "button",
-                onclick: move |_| {
-                    let input = repo_link().trim().to_string();
+            // button {
+            //     class: "button",
+            //     onclick: move |_| {
+            //         let input = repo_link().trim().to_string();
 
-                    let url_to_use = if input.is_empty() {
-                        match git_helper::origin_url() {
-                            Some(existing) => existing,
-                            None => {
-                                println!("No existing Git remote to use. Please enter a repository URL.");
-                                return;
-                            }
-                        }
-                    } else {
-                        if Url::parse(&input).is_err() {
-                            println!("Invalid URL: {}", input);
-                            return;
-                        }
-                        input
-                    };
+            //         let url_to_use = if input.is_empty() {
+            //             match git_helper::origin_url() {
+            //                 Some(existing) => existing,
+            //                 None => {
+            //                     println!("No existing Git remote to use. Please enter a repository URL.");
+            //                     return;
+            //                 }
+            //             }
+            //         } else {
+            //             if Url::parse(&input).is_err() {
+            //                 println!("Invalid URL: {}", input);
+            //                 return;
+            //             }
+            //             input
+            //         };
 
-                    let url_for_task = url_to_use.clone();
-                    println!("{}", url_to_use);
+            //         let url_for_task = url_to_use.clone();
+            //         println!("{}", url_to_use);
 
-                    spawn(async move {
-                        if let Err(e) = git_helper::setup_git(&url_for_task) {
-                            println!("Git set repo failed: {}", e);
-                        }
-                    });
-                },
-                "Set Repo"
-            },
+            //         spawn(async move {
+            //             if let Err(e) = git_helper::setup_git(&url_for_task) {
+            //                 println!("Git set repo failed: {}", e);
+            //             }
+            //         });
+            //     },
+            //     "Set Repo"
+            // },
             button {
                 class: "button",
                 onclick: move |_| {

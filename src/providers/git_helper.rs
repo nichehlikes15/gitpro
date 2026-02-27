@@ -44,41 +44,15 @@ pub(crate) fn current_repo() -> String {
     result
 }
 
-fn normalize_repo_link(repo_link: &str) -> String {
-    let trimmed = repo_link.trim();
-
-    if let Some(rest) = trimmed.strip_prefix("https://github.com/") {
-        let without_git = rest.strip_suffix(".git").unwrap_or(rest);
-        let without_slash = without_git.trim_end_matches('/');
-        return format!("git@github.com:{without_slash}.git");
-    }
-
-    if let Some(rest) = trimmed.strip_prefix("http://github.com/") {
-        let without_git = rest.strip_suffix(".git").unwrap_or(rest);
-        let without_slash = without_git.trim_end_matches('/');
-        return format!("git@github.com:{without_slash}.git");
-    }
-
-    trimmed.to_string()
-}
-
-pub(crate) fn origin_url() -> Option<String> {
-    let repo = open_repo().ok()?;
-    let remote = repo.find_remote("origin").ok()?;
-    remote.url().map(|s| s.to_string())
-}
-
 pub(crate) fn setup_git(repo_link: &str) -> Result<(), String> {
-    let normalized = normalize_repo_link(repo_link);
-    println!("setup_git: {}", normalized);
     let repo = open_repo().or_else(|_| Repository::init(".").map_err(|e| e.message().to_string()))?;
 
     let result = match repo.find_remote("origin") {
         Ok(_) => repo
-            .remote_set_url("origin", &normalized)
+            .remote_set_url("origin", repo_link)
             .map_err(|e| e.message().to_string()),
         Err(e) if e.code() == ErrorCode::NotFound => {
-            repo.remote("origin", &normalized)
+            repo.remote("origin", repo_link)
                 .map(|_| ())
                 .map_err(|e| e.message().to_string())
         }
@@ -132,33 +106,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
 
     let mut callbacks = RemoteCallbacks::new();
     callbacks.credentials(|url, username_from_url, _allowed_types| {
-        let username = username_from_url.unwrap_or("git");
-
-        // Prefer explicit SSH key for GitHub SSH URLs if configured
-        if url.starts_with("git@github.com:") || url.starts_with("ssh://git@github.com") {
-            if let Ok(key_path) = std::env::var("GITPRO_SSH_KEY_PATH") {
-                let passphrase = std::env::var("GITPRO_SSH_PASSPHRASE").ok();
-                return Cred::ssh_key(
-                    username,
-                    None,
-                    std::path::Path::new(&key_path),
-                    passphrase.as_deref(),
-                );
-            }
-
-            return Cred::ssh_key_from_agent(username);
-        }
-
-        // HTTPS GitHub fallback via PAT
-        if url.starts_with("https://github.com/") {
-            if let Ok(token) = std::env::var("GITPRO_GITHUB_TOKEN") {
-                if !token.trim().is_empty() {
-                    return Cred::userpass_plaintext("x-access-token", &token);
-                }
-            }
-        }
-
-        Cred::ssh_key_from_agent(username)
+        Cred::ssh_key_from_agent(username_from_url.unwrap_or("git"))
             .or_else(|_| {
                 let cfg = repo.config()?;
                 Cred::credential_helper(&cfg, url, username_from_url)

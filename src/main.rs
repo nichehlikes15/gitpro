@@ -1,4 +1,5 @@
 //Run with dx serve --always-on-top false
+//https://github.com/login/oauth/authorize?client_id=Ov23liICKYW0zOWqK6xS&redirect_uri=http://127.0.0.1:49152/callback&scope=repo
 
 use dioxus::prelude::*;
 
