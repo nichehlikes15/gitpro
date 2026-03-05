@@ -18,7 +18,7 @@ pub fn Login() -> Element {
             p { class: "s1", "Welcome to Git Pro" }
             p { class: "s2", "Get started by logging into your github account below:" }
             div { class: "home_buttons",
-                a { href: "https://github.com/login/oauth/authorize?client_id=Ov23liICKYW0zOWqK6xS&redirect_uri=http://127.0.0.1:49152/callback&scope=repo", target: "_blank", button { "Link Github" } }
+                a { href: "https://github.com/login/oauth/authorize?client_id=Ov23liICKYW0zOWqK6xS&redirect_uri=https://romantic-energy-production-e83d.up.railway.app/callback&scope=repo", target: "_blank", button { "Link Github" } }
             }
             Link { class: "s3 link", to: Route::Menu {}, "Open Existing Local Repository"}
         }
