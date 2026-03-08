@@ -1,14 +1,5 @@
 use octocrab::Octocrab;
-use serde::Deserialize;
 use std::error::Error;
-
-#[derive(Debug, Deserialize)]
-struct Email {
-    email: String,
-    primary: bool,
-    verified: bool,
-    visibility: Option<String>,
-}
 
 pub(crate) async fn get_username_api(token: &str) -> Result<String, Box<dyn Error>> {
     let octocrab = Octocrab::builder()
@@ -41,9 +32,8 @@ pub(crate) async fn star_repo(token: &str) -> Result<(), Box<dyn Error>> {
         .personal_token(token.to_string())
         .build()?;
 
-    // Empty request body (Some(&())) and ignore response with ()
     octocrab
-        .put::<(), (), _>(
+        .put::<(), _, _>(
             "/user/starred/nichehlikes15/gitpro",
             Some(&()),
         )

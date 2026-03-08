@@ -143,3 +143,17 @@ body {
     width: auto;
     object-fit: contain;
 }
+
+.topbar_img_star {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    fill: #e3b341;
+}
+
+.topbar_img_unstar {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    fill: #9198a1;
+}
