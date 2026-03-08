@@ -1,0 +1,145 @@
+:root {
+    --bg1: #020711;
+    --bg2: #111727;
+    --bg3: #202938;
+    --border: #252a36;
+    --text: #ffffff;
+    --hover: #2463eb;
+    --link: #60a5fa;
+}
+
+body {
+    background: var(--bg1);
+    color: var(--text);
+    font-family: JetBrainsMono;
+    margin: 0;
+}
+
+* {
+    font-family: inherit;
+}
+
+.s1 {
+    font-size: 1.5rem;
+}
+
+.s2 {
+    font-size: 1rem;
+}
+
+.s3 {
+    font-size: 0.875rem;
+}
+
+.link {
+    cursor: pointer;
+    color: var(--link);
+}
+
+/*Home*/
+
+#container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; 
+}
+
+.img {
+    width: 100px;
+    height: auto;
+}
+
+.home_buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.home_buttons button {
+    flex: 1;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+}
+
+#buttons {
+    margin-top: 20px;
+    margin-left: 20px;
+    padding: 16px 12px;
+    width: fit-content;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    background-color: var(--bg2);
+
+    border-radius: 8px;
+    border: 2px solid var(--border);
+}
+
+.button {
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: var(--text);
+    background-color: var(--bg3);
+
+    border-radius: 32px;
+    border: 2px solid var(--border);
+
+    cursor: pointer;
+    appearance: none;
+    pointer-events: auto;
+
+    transition:
+        background-color 0.15s ease,
+}
+
+.button:hover {
+    background-color: var(--hover);
+}
+
+
+
+
+
+#topbar {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 16px;
+
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+
+    background-color: var(--bg2);
+    color: var(--text);
+}
+
+.active-branch {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: 20px;
+}
+
+.branch-selection {
+    background: var(--bg3);
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.topbar_img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+}
