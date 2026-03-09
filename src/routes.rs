@@ -7,11 +7,11 @@ use crate::views::login::Login;
 #[derive(Debug, Clone, Routable, PartialEq)]
 pub enum Route {
     #[route("/")]
-    Login {},
+    Home {},
 
     #[route("/menu")]
     Menu {},
 
     #[route("/login")]
-    Home {},
+    Login {},
 }

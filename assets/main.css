@@ -112,6 +112,7 @@ body {
 
     display: flex;
     flex-direction: row;
+    align-items: center;
     gap: 8px;
 
     background-color: var(--bg2);
@@ -138,22 +139,25 @@ body {
     cursor: pointer;
 }
 
-.topbar_img {
-    height: 100%;
-    width: auto;
-    object-fit: contain;
+.topbar_link {
+    text-decoration: none;
+}
+
+.topbar_title {
+    font-size: 1.25rem;
+    color: var(--text);
 }
 
 .topbar_img_star {
-    height: 100%;
-    width: auto;
-    object-fit: contain;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
     fill: #e3b341;
 }
 
 .topbar_img_unstar {
-    height: 100%;
-    width: auto;
-    object-fit: contain;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
     fill: #9198a1;
 }

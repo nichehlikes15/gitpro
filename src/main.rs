@@ -15,13 +15,17 @@ const MAIN_CSS: Asset = asset!("/assets/main.css");
 const JETBRAINS_MONO: Asset = asset!("/assets/fonts/JetBrainsMono-Medium.ttf");
 
 fn main() {
-    CryptoProvider::install_default(ring::default_provider())
-        .expect("Failed to install rustls crypto provider");
+    CryptoProvider::install_default(ring::default_provider()).expect("Failed to install rustls crypto provider");
     dioxus::launch(App);
 }
 
 #[component]
 fn App() -> Element {
+    
+    let token_check = use_future(&cx, (), |_| async {
+        login::check_token().await.unwrap_or(false)
+    });
+    let needLogin = providers::login::checklogin::check_token();
     rsx! {
         document::Style { r#type: "text/css",
             {
@@ -34,8 +38,10 @@ fn App() -> Element {
 
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        Router::<Route> {}
-        //views::menu::menu {}
-        //views::home::home {}
+        if needLogin {
+            views::login::Login {}
+        } else {
+            Router::<Route> {}
+        }
     }
 }

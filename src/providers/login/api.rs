@@ -8,22 +8,6 @@ pub(crate) async fn get_username_api(token: &str) -> Result<String, Box<dyn Erro
 
     let user = octocrab.current().user().await?;
 
-    //println!("Username: {}", user.login);
-    //println!("Public Email: {:?}", user.email);
-
-    // Fetch emails via the API
-    //let emails: Vec<Email> = octocrab
-    //    .get("/user/emails", None::<&()>)
-    //    .await?;
-
-    //println!("\nEmails:");
-    //for email in emails {
-    //    println!(
-    //        "- {} | primary: {} | verified: {} | visibility: {:?}",
-    //        email.email, email.primary, email.verified, email.visibility
-    //    );
-    //}
-
     Ok(user.login)
 }
 
