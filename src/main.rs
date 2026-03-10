@@ -22,10 +22,9 @@ fn main() {
 #[component]
 fn App() -> Element {
     
-    let token_check = use_future(&cx, (), |_| async {
-        login::check_token().await.unwrap_or(false)
+    let token_check = use_future(|| async {
+        providers::login::checklogin::check_token().await
     });
-    let needLogin = providers::login::checklogin::check_token();
     rsx! {
         document::Style { r#type: "text/css",
             {
@@ -38,7 +37,7 @@ fn App() -> Element {
 
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        if needLogin {
+        if token_check {
             views::login::Login {}
         } else {
             Router::<Route> {}
