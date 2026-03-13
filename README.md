@@ -2,6 +2,7 @@ Gitpro, in development
 
 Designed to be a one click action to push, pull or commit files.
 A GUI, designed to be simple and fast.
+Simple for beginners, starting github.
 
 Using libgit2
 
