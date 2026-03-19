@@ -1,5 +1,5 @@
 # Gitpro
-### in development
+* in development *
 
 Designed to be a one click gui action to push, pull or commit files.
 A GUI, designed to be simple and fast.
