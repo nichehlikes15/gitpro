@@ -21,11 +21,10 @@ fn main() {
 
 #[component]
 fn App() -> Element {
-    
-    let token_check = use_future(|| async {
-        providers::login::checklogin::check_token().await
+    let mut token_check = use_signal::<bool>(|| false);
+    spawn(async move {
+        token_check.set(providers::login::checklogin::check_token().await.unwrap_or(false));
     });
-    let Some(t) = token_check.read();
     rsx! {
         document::Style { r#type: "text/css",
             {
@@ -38,12 +37,10 @@ fn App() -> Element {
 
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        if let Some(t) = token_check.read() && t {}
-
-        // if token_check {
-        //     views::login::Login {}
-        // } else {
-        //     Router::<Route> {}
-        // }
+        if token_check.read().clone() {
+            views::login::Login {}
+        } else {
+            Router::<Route> {}
+        }
     }
 }
