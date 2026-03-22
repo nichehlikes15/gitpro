@@ -1,11 +1,22 @@
 use dioxus::{prelude::*};
 
+use crate::providers;
 use crate::routes::Route;
 use crate::components::topbar;
 
 #[component]
 pub fn Home() -> Element {
+
+    let mut token_check = use_signal::<bool>(|| false);
+    spawn(async move {
+        token_check.set(providers::login::checklogin::check_token().await.unwrap_or(false));
+    });
+
     rsx! {
+        if token_check.read().clone() {
+            Route::Login {}
+        }
+        
         topbar::topbar {}
 
         div { id: "container",

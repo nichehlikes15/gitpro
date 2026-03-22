@@ -21,10 +21,6 @@ fn main() {
 
 #[component]
 fn App() -> Element {
-    let mut token_check = use_signal::<bool>(|| false);
-    spawn(async move {
-        token_check.set(providers::login::checklogin::check_token().await.unwrap_or(false));
-    });
     rsx! {
         document::Style { r#type: "text/css",
             {
@@ -37,10 +33,7 @@ fn App() -> Element {
 
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        if token_check.read().clone() {
-            views::login::Login {}
-        } else {
-            Router::<Route> {}
-        }
+
+        Router::<Route> {}
     }
 }
