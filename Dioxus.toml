@@ -19,3 +19,12 @@ script = []
 # Javascript code file
 # serve: [dev-server] only
 script = []
+
+[bundle]
+identifier = "com.nichehlikes15.gitpro"
+name = "GitPro"
+version = "0.1.0"
+publisher = "nichehlikes15"
+
+[bundle.desktop]
+icon = "assets/icons/gitpro.ico"
