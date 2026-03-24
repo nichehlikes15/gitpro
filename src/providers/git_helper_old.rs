@@ -150,10 +150,10 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
         }
 
         // HTTPS GitHub fallback via PAT
-        if url.starts_with("https://github.com/") {
+        if url.contains("github.com") {
             if let Ok(token) = std::env::var("GITPRO_GITHUB_TOKEN") {
                 if !token.trim().is_empty() {
-                    return Cred::userpass_plaintext("x-access-token", &token);
+                    return Cred::userpass_plaintext(&token, "")
                 }
             }
         }
