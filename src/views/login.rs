@@ -7,7 +7,9 @@ use crate::providers::login::tokenhandler;
 #[component]
 pub fn Login() -> Element {
     use_future(|| async {
-        println!("{}", tokenhandler::start_webserver().await);
+        let nav = use_navigator();
+        tokenhandler::start_webserver().await;
+        nav.push(Route::Menu {});
     });
 
     rsx! {
