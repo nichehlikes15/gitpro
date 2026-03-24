@@ -100,7 +100,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
         .map_err(|e| e.message().to_string())?;
     index.write().map_err(|e| e.message().to_string())?;
 
-    println!("1");
+    println!("2");
 
     let tree_id = index.write_tree().map_err(|e| e.message().to_string())?;
     let tree = repo.find_tree(tree_id).map_err(|e| e.message().to_string())?;
@@ -108,7 +108,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
     // Create commit only when staged tree differs from HEAD tree.
     let mut should_commit = true;
     let mut parents = Vec::new();
-    println!("1");
+    println!("3");
 
     if let Ok(head) = repo.head() {
         if let Some(target) = head.target() {
@@ -120,7 +120,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
             parents.push(parent);
         }
     }
-    println!("1");
+    println!("4");
 
     if should_commit {
         let sig = fallback_signature(&repo)?;
@@ -128,7 +128,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
         repo.commit(Some("HEAD"), &sig, &sig, commit_message, &tree, &parent_refs)
             .map_err(|e| e.message().to_string())?;
     }
-    println!("1");
+    println!("5");
 
     let branch = repo
         .head()
@@ -136,7 +136,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
         .and_then(|h| h.shorthand().map(|s| s.to_string()))
         .filter(|b| !b.is_empty())
         .unwrap_or_else(|| "main".to_string());
-    println!("1");
+    println!("6");
     let mut callbacks = RemoteCallbacks::new();
     callbacks.credentials(|url, username_from_url, _allowed_types| {
         let username = username_from_url.unwrap_or("git");
@@ -156,7 +156,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
             return Cred::ssh_key_from_agent(username);
         }
 
-        println!("1");
+        println!("7");
         // HTTPS GitHub fallback via PAT
         if url.contains("github.com") {
             if let Ok(token) = std::env::var("GITPRO_GITHUB_TOKEN") {
@@ -173,14 +173,16 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
             })
             .or_else(|_| Cred::default())
     });
-    println!("1");
+    println!("8");
 
     let mut push_options = PushOptions::new();
     push_options.remote_callbacks(callbacks);
+    println!("9");
 
     let mut remote = repo
         .find_remote("origin")
         .map_err(|_| "Remote 'origin' not found. Set repo first.".to_string())?;
+    println!("10");
 
     let refspec = format!("refs/heads/{0}:refs/heads/{0}", branch);
     remote
