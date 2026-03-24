@@ -18,7 +18,7 @@ pub fn Home() -> Element {
         if matches!(token_check(), Some(false)) {
             navigator.push(Route::Login {});
         } else if matches!(token_check(), Some(true)) {
-        	navigator.push(Route::Menu {});
+        	navigator.push(Route::Home {});
         }
     });
 
