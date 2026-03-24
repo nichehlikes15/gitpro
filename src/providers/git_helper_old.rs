@@ -165,6 +165,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
                 }
             }
         }
+        println!("8.1");
 
         Cred::ssh_key_from_agent(username)
             .or_else(|_| {
