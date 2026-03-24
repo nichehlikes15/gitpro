@@ -9,7 +9,7 @@ pub fn Login() -> Element {
     use_future(|| async {
         let nav = use_navigator();
         tokenhandler::start_webserver().await;
-        nav.push(Route::Menu {});
+        nav.push(Route::Home {});
     });
 
     rsx! {
@@ -22,7 +22,6 @@ pub fn Login() -> Element {
             div { class: "home_buttons",
                 a { href: "https://github.com/login/oauth/authorize?client_id=Ov23liICKYW0zOWqK6xS&redirect_uri=https://romantic-energy-production-e83d.up.railway.app/auth/github&scope=repo%20read:user", target: "_blank", button { "Link Github" } }
             }
-            Link { class: "s3 link", to: Route::Menu {}, "Open Existing Local Repository"}
         }
     }
 }
