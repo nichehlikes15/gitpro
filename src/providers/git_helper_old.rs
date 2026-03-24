@@ -1,6 +1,8 @@
 use git2::{
     Cred, ErrorCode, IndexAddOption, PushOptions, RemoteCallbacks, Repository, Signature,
 };
+use std::{error::Error, fs, path::Path};
+use serde::Deserialize;
 
 fn open_repo() -> Result<Repository, String> {
     Repository::discover(".").map_err(|e| e.message().to_string())
@@ -88,6 +90,18 @@ pub(crate) fn setup_git(repo_link: &str) -> Result<(), String> {
     result
 }
 
+#[derive(Deserialize)]
+struct TokenData {
+    token: String
+}
+
+fn get_token() -> Result<String, Box<dyn Error>> {
+    let data = fs::read_to_string("token.json")?;
+    let token_data: TokenData = serde_json::from_str(&data)?;
+
+    Ok(token_data.token)
+}
+
 pub(crate) fn push(commit_message: &str) -> Result<(), String> {
     let repo = open_repo()?;
 
@@ -159,7 +173,7 @@ pub(crate) fn push(commit_message: &str) -> Result<(), String> {
         println!("7");
         // HTTPS GitHub fallback via PAT
         if url.contains("github.com") {
-            if let Ok(token) = std::env::var("GITPRO_GITHUB_TOKEN") {
+            if let Ok(token) = get_token() {
                 if !token.trim().is_empty() {
                     return Cred::userpass_plaintext(&token, "")
                 }
