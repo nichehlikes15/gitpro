@@ -1,9 +1,7 @@
 use dioxus::{prelude::*};
 
-use url::Url;
-
 use crate::components::topbar;
-use crate::providers::git_helper_old;
+use crate::providers::git_helper;
 
 #[component]
 pub fn Menu() -> Element {
@@ -16,7 +14,7 @@ pub fn Menu() -> Element {
         div { id: "buttons",
             input {
                 class: "input",
-                placeholder: git_helper_old::current_repo(),
+                placeholder: git_helper::current_repo(),
                 value: repo_link(),
                 oninput: move |event| repo_link.set(event.value()),
             },
@@ -67,7 +65,7 @@ pub fn Menu() -> Element {
                     }
 
                     spawn(async move {
-                        match git_helper_old::push(&commit_message().clone()) {
+                        match git_helper::push(&commit_message().clone()) {
                             Ok(_) => println!("Git push succeeded."),
                             Err(e) => println!("Git push failed: {}", e),
                         }

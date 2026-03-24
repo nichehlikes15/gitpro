@@ -4,8 +4,7 @@ use std::{error::Error, fs, path::Path};
 
 #[derive(Deserialize)]
 struct TokenData {
-    token: String,
-    username: String,
+    token: String
 }
 
 pub(crate) async fn check_token() -> Result<bool, Box<dyn Error>> {

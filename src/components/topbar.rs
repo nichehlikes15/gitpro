@@ -1,7 +1,7 @@
 use dioxus::{prelude::*};
 
 use crate::routes::Route;
-use crate::providers::git_helper_old;
+use crate::providers::git_helper;
 use crate::providers::login;
 
 #[component]
