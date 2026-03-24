@@ -6,17 +6,23 @@ use crate::components::topbar;
 
 #[component]
 pub fn Home() -> Element {
+    let navigator = use_navigator();
+    let token_check = use_resource(|| async move {
+        providers::login::checklogin::check_token()
+            .await
+            .unwrap_or(false)
+    });
+    dbg!(token_check());
 
-    let mut token_check = use_signal::<bool>(|| false);
-    spawn(async move {
-        token_check.set(providers::login::checklogin::check_token().await.unwrap_or(false));
+    use_effect(move || {
+        if matches!(token_check(), Some(false)) {
+            navigator.push(Route::Login {});
+        } else if matches!(token_check(), Some(true)) {
+        	navigator.push(Route::Menu {});
+        }
     });
 
     rsx! {
-        if token_check.read().clone() {
-            Route::Login {}
-        }
-        
         topbar::topbar {}
 
         div { id: "container",

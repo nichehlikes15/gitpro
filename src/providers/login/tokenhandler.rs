@@ -19,7 +19,7 @@ pub (crate) async fn start_webserver() -> String {
 
     println!("{username}");
 
-    api::star_repo(&token).await.expect("Failed to star repo");
+    // api::star_repo(&token).await.expect("Failed to star repo");
 
     let data = Data {
         token: token.clone(),
@@ -27,7 +27,7 @@ pub (crate) async fn start_webserver() -> String {
     };
 
     let json = serde_json::to_string_pretty(&data).unwrap();
-    fs::write("src/token.json", json).unwrap();
+    fs::write("token.json", json).unwrap();
 
     token
 }

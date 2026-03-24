@@ -9,7 +9,7 @@ struct TokenData {
 }
 
 pub(crate) async fn check_token() -> Result<bool, Box<dyn Error>> {
-    if !Path::new("src/token.json").exists() {
+    if !Path::new("token.json").exists() {
         return Ok(false);
     }
 
@@ -31,7 +31,7 @@ async fn get_username_api(token: &str) -> Result<String, Box<dyn Error>> {
 }
 
 async fn get_token() -> Result<String, Box<dyn Error>> {
-    let data = fs::read_to_string("src/token.json")?;
+    let data = fs::read_to_string("token.json")?;
     let token_data: TokenData = serde_json::from_str(&data)?;
 
     Ok(token_data.token)
