@@ -5,7 +5,7 @@ Designed to be a one click gui action to push, pull or commit files.
 A GUI, designed to be simple and fast.
 Simple for beginners, starting github.
 
-Coming soon with a cli and gui .
+Coming soon with a cli and gui.
 
 Using Rust with libgit2
 
